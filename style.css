@@ -45,6 +45,34 @@ header h1 {
     letter-spacing: 0.5px;
 }
 
+.header-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.github-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    border-radius: 6px;
+    transition: all 0.2s;
+}
+
+.github-link:hover {
+    color: var(--text-primary);
+    background-color: rgba(26, 26, 26, 0.05);
+}
+
+.github-icon {
+    width: 20px;
+    height: 20px;
+}
+
 .mobile-toggle {
     display: none;
     background: none;
@@ -556,6 +584,20 @@ header h1 {
     
     header h1 {
         font-size: 20px;
+    }
+    
+    .header-controls {
+        gap: 8px;
+    }
+    
+    .github-link {
+        width: 36px;
+        height: 36px;
+    }
+    
+    .github-icon {
+        width: 22px;
+        height: 22px;
     }
     
     /* Full screen video canvas on mobile */
