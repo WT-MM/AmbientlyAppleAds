@@ -4,6 +4,16 @@ let layerCounter = 0;
 let activeLayerId = null;
 let YTReady = false;
 
+// Video ID to name mapping
+const videoNames = {
+    'XOBE3FCyaqU': 'Great ideas start on Mac',
+    '-ueUb6PNwbs': 'Design is how it works',
+    'R3rBlZGEssw': 'Magnifier on Mac',
+    'EMmKs8vMKhU': 'Introducing Airpods Pro 3',
+    'M0au92yebLQ': 'Introducing iPhone Air',
+    '0HjDpPnxcP0': 'Privacy on iPhone'
+};
+
 // YouTube API Ready callback
 function onYouTubeIframeAPIReady() {
     YTReady = true;
@@ -28,6 +38,7 @@ class VideoLayer {
         this.timeOffset = 0;
         this.duration = 0; // Video duration in seconds
         this.playbackRate = 1; // Playback speed (1 = normal, 0.5 = half speed, 2 = double speed)
+        this.videoName = videoNames[videoId] || 'Unknown Video';
         this.player = null;
         this.element = null;
         this.isDragging = false;
@@ -138,7 +149,10 @@ class VideoLayer {
         
         controlDiv.innerHTML = `
             <div class="layer-header">
-                <div class="layer-title">Layer ${this.id + 1}</div>
+                <div class="layer-title">
+                    <div class="layer-number">Layer ${this.id + 1}</div>
+                    <div class="video-name">${this.videoName}</div>
+                </div>
                 <div class="layer-controls-group">
                     <button class="btn-icon btn-play" data-action="play">▶</button>
                     <button class="btn-icon btn-pause" data-action="pause">⏸</button>
@@ -483,6 +497,7 @@ class VideoLayer {
         newLayer.volume = this.volume;
         newLayer.timeOffset = this.timeOffset;
         newLayer.playbackRate = this.playbackRate;
+        newLayer.videoName = this.videoName;
         
         // Update the visual elements
         newLayer.element.style.left = `${newLayer.x}px`;
