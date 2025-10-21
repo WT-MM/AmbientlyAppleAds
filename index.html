@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Ambiently Apple Ads</title>
     <link rel="stylesheet" href="style.css">
 </head>
@@ -10,6 +10,7 @@
     <div class="app">
         <header>
             <h1>Ambiently Apple Ads</h1>
+            <button class="mobile-toggle" id="mobileToggleBtn">☰</button>
         </header>
         
         <div class="main-container">
@@ -17,6 +18,9 @@
             <div class="video-canvas" id="videoCanvas">
                 <!-- Video players will be dynamically added here -->
             </div>
+            
+            <!-- Mobile Overlay -->
+            <div class="mobile-overlay" id="mobileOverlay"></div>
             
             <!-- Control Panel -->
             <div class="control-panel">

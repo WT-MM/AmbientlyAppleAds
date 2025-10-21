@@ -53,8 +53,9 @@ class VideoLayer {
         this.element.appendChild(playerDiv);
         canvas.appendChild(this.element);
         
-        // Add drag functionality
+        // Add drag functionality (mouse and touch)
         this.element.addEventListener('mousedown', (e) => this.startDrag(e));
+        this.element.addEventListener('touchstart', (e) => this.startTouchDrag(e));
         this.element.addEventListener('click', () => this.setActive());
     }
     
@@ -273,6 +274,35 @@ class VideoLayer {
         document.addEventListener('mouseup', onMouseUp);
     }
     
+    startTouchDrag(e) {
+        e.preventDefault(); // Prevent scrolling
+        if (e.target.closest('iframe')) return; // Don't drag when touching video
+        
+        const touch = e.touches[0];
+        this.isDragging = true;
+        this.dragStartX = touch.clientX - this.x;
+        this.dragStartY = touch.clientY - this.y;
+        
+        const onTouchMove = (e) => {
+            if (!this.isDragging) return;
+            e.preventDefault(); // Prevent scrolling
+            
+            const touch = e.touches[0];
+            const newX = touch.clientX - this.dragStartX;
+            const newY = touch.clientY - this.dragStartY;
+            this.setPosition(newX, newY);
+        };
+        
+        const onTouchEnd = () => {
+            this.isDragging = false;
+            document.removeEventListener('touchmove', onTouchMove);
+            document.removeEventListener('touchend', onTouchEnd);
+        };
+        
+        document.addEventListener('touchmove', onTouchMove, { passive: false });
+        document.addEventListener('touchend', onTouchEnd);
+    }
+    
     remove() {
         if (this.player && this.player.destroy) {
             this.player.destroy();
@@ -359,15 +389,56 @@ function checkEmptyState() {
     }
 }
 
+// Mobile controls toggle functionality
+function toggleMobileControls() {
+    const controlPanel = document.querySelector('.control-panel');
+    const overlay = document.getElementById('mobileOverlay');
+    const toggleBtn = document.getElementById('mobileToggleBtn');
+    
+    const isOpen = controlPanel.classList.contains('open');
+    
+    if (isOpen) {
+        controlPanel.classList.remove('open');
+        overlay.classList.remove('open');
+        toggleBtn.textContent = '☰';
+    } else {
+        controlPanel.classList.add('open');
+        overlay.classList.add('open');
+        toggleBtn.textContent = '✕';
+    }
+}
+
+// Close mobile controls when clicking overlay
+function closeMobileControls() {
+    const controlPanel = document.querySelector('.control-panel');
+    const overlay = document.getElementById('mobileOverlay');
+    const toggleBtn = document.getElementById('mobileToggleBtn');
+    
+    controlPanel.classList.remove('open');
+    overlay.classList.remove('open');
+    toggleBtn.textContent = '☰';
+}
+
 // Initialize app
 document.addEventListener('DOMContentLoaded', () => {
     const addBtn = document.getElementById('addLayerBtn');
     const playAllBtn = document.getElementById('playAllBtn');
     const pauseAllBtn = document.getElementById('pauseAllBtn');
+    const mobileToggleBtn = document.getElementById('mobileToggleBtn');
+    const mobileOverlay = document.getElementById('mobileOverlay');
     
     addBtn.addEventListener('click', addLayer);
     playAllBtn.addEventListener('click', playAll);
     pauseAllBtn.addEventListener('click', pauseAll);
+    
+    // Mobile controls toggle
+    if (mobileToggleBtn) {
+        mobileToggleBtn.addEventListener('click', toggleMobileControls);
+    }
+    
+    if (mobileOverlay) {
+        mobileOverlay.addEventListener('click', closeMobileControls);
+    }
     
     // Add keyboard shortcuts
     document.addEventListener('keydown', (e) => {
