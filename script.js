@@ -17,8 +17,12 @@ class VideoLayer {
         this.videoId = videoId;
         this.x = 50;
         this.y = 50;
-        this.width = 640;
-        this.height = 360;
+        
+        // Set initial size based on screen width
+        const isMobile = window.innerWidth <= 768;
+        this.width = isMobile ? Math.min(window.innerWidth * 0.8, 640) : 640;
+        this.height = isMobile ? (this.width * 9 / 16) : 360; // Maintain 16:9 aspect ratio
+        
         this.opacity = 1;
         this.volume = 50;
         this.timeOffset = 0;
@@ -27,6 +31,8 @@ class VideoLayer {
         this.isDragging = false;
         this.dragStartX = 0;
         this.dragStartY = 0;
+        this.isResizing = false;
+        this.resizeHandle = null;
         
         this.createElements();
         this.createPlayer();
@@ -50,13 +56,26 @@ class VideoLayer {
         playerDiv.style.width = '100%';
         playerDiv.style.height = '100%';
         
+        // Create resize handle
+        this.resizeHandle = document.createElement('div');
+        this.resizeHandle.className = 'resize-handle';
+        this.resizeHandle.innerHTML = '↘';
+        
         this.element.appendChild(playerDiv);
+        this.element.appendChild(this.resizeHandle);
         canvas.appendChild(this.element);
         
         // Add drag functionality (mouse and touch)
         this.element.addEventListener('mousedown', (e) => this.startDrag(e));
         this.element.addEventListener('touchstart', (e) => this.startTouchDrag(e));
         this.element.addEventListener('click', () => this.setActive());
+        
+        // Add resize functionality
+        this.resizeHandle.addEventListener('mousedown', (e) => this.startResize(e));
+        this.resizeHandle.addEventListener('touchstart', (e) => this.startTouchResize(e));
+        
+        // Add context menu functionality
+        this.element.addEventListener('contextmenu', (e) => this.showContextMenu(e));
     }
     
     createPlayer() {
@@ -250,7 +269,7 @@ class VideoLayer {
     }
     
     startDrag(e) {
-        if (e.target.closest('iframe')) return; // Don't drag when clicking on video
+        if (e.target.closest('iframe') || e.target.classList.contains('resize-handle')) return; // Don't drag when clicking on video or resize handle
         
         this.isDragging = true;
         this.dragStartX = e.clientX - this.x;
@@ -276,7 +295,7 @@ class VideoLayer {
     
     startTouchDrag(e) {
         e.preventDefault(); // Prevent scrolling
-        if (e.target.closest('iframe')) return; // Don't drag when touching video
+        if (e.target.closest('iframe') || e.target.classList.contains('resize-handle')) return; // Don't drag when touching video or resize handle
         
         const touch = e.touches[0];
         this.isDragging = true;
@@ -301,6 +320,140 @@ class VideoLayer {
         
         document.addEventListener('touchmove', onTouchMove, { passive: false });
         document.addEventListener('touchend', onTouchEnd);
+    }
+    
+    startResize(e) {
+        e.stopPropagation(); // Prevent drag
+        this.isResizing = true;
+        this.dragStartX = e.clientX;
+        this.dragStartY = e.clientY;
+        const startWidth = this.width;
+        const startHeight = this.height;
+        
+        const onMouseMove = (e) => {
+            if (!this.isResizing) return;
+            
+            const deltaX = e.clientX - this.dragStartX;
+            const deltaY = e.clientY - this.dragStartY;
+            
+            const newWidth = Math.max(200, startWidth + deltaX); // Minimum width
+            const newHeight = Math.max(112, startHeight + deltaY); // Minimum height (16:9 ratio)
+            
+            this.setSize(newWidth, newHeight);
+        };
+        
+        const onMouseUp = () => {
+            this.isResizing = false;
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+        };
+        
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
+    }
+    
+    startTouchResize(e) {
+        e.preventDefault();
+        e.stopPropagation(); // Prevent drag
+        this.isResizing = true;
+        const touch = e.touches[0];
+        this.dragStartX = touch.clientX;
+        this.dragStartY = touch.clientY;
+        const startWidth = this.width;
+        const startHeight = this.height;
+        
+        const onTouchMove = (e) => {
+            if (!this.isResizing) return;
+            e.preventDefault();
+            
+            const touch = e.touches[0];
+            const deltaX = touch.clientX - this.dragStartX;
+            const deltaY = touch.clientY - this.dragStartY;
+            
+            const newWidth = Math.max(200, startWidth + deltaX); // Minimum width
+            const newHeight = Math.max(112, startHeight + deltaY); // Minimum height (16:9 ratio)
+            
+            this.setSize(newWidth, newHeight);
+        };
+        
+        const onTouchEnd = () => {
+            this.isResizing = false;
+            document.removeEventListener('touchmove', onTouchMove);
+            document.removeEventListener('touchend', onTouchEnd);
+        };
+        
+        document.addEventListener('touchmove', onTouchMove, { passive: false });
+        document.addEventListener('touchend', onTouchEnd);
+    }
+    
+    showContextMenu(e) {
+        e.preventDefault();
+        this.setActive();
+        
+        const contextMenu = document.getElementById('contextMenu');
+        const x = e.clientX;
+        const y = e.clientY;
+        
+        // Position the context menu
+        contextMenu.style.left = `${x}px`;
+        contextMenu.style.top = `${y}px`;
+        contextMenu.classList.add('open');
+        
+        // Store reference to this layer for context menu actions
+        contextMenu.dataset.layerId = this.id;
+        
+        // Close context menu when clicking elsewhere
+        const closeContextMenu = (e) => {
+            if (!contextMenu.contains(e.target)) {
+                contextMenu.classList.remove('open');
+                document.removeEventListener('click', closeContextMenu);
+            }
+        };
+        
+        setTimeout(() => {
+            document.addEventListener('click', closeContextMenu);
+        }, 100);
+    }
+    
+    duplicate() {
+        // Create a new layer with the same properties
+        const newLayer = new VideoLayer(this.videoId, layerCounter++);
+        
+        // Copy all properties
+        newLayer.x = this.x + 20; // Offset slightly
+        newLayer.y = this.y + 20;
+        newLayer.width = this.width;
+        newLayer.height = this.height;
+        newLayer.opacity = this.opacity;
+        newLayer.volume = this.volume;
+        newLayer.timeOffset = this.timeOffset;
+        
+        // Update the visual elements
+        newLayer.element.style.left = `${newLayer.x}px`;
+        newLayer.element.style.top = `${newLayer.y}px`;
+        newLayer.element.style.width = `${newLayer.width}px`;
+        newLayer.element.style.height = `${newLayer.height}px`;
+        newLayer.element.style.opacity = newLayer.opacity;
+        
+        // Update controls
+        const control = document.getElementById(`control-${newLayer.id}`);
+        if (control) {
+            control.querySelector('[data-control="x"]').value = newLayer.x;
+            control.querySelector('[data-control="y"]').value = newLayer.y;
+            control.querySelector('[data-control="width"]').value = newLayer.width;
+            control.querySelector('[data-control="height"]').value = newLayer.height;
+            control.querySelector('[data-control="opacity"]').value = newLayer.opacity * 100;
+            control.querySelector('[data-control="volume"]').value = newLayer.volume;
+            control.querySelector('[data-control="timeOffset"]').value = newLayer.timeOffset;
+            control.querySelector('[data-value="opacity"]').textContent = `${Math.round(newLayer.opacity * 100)}%`;
+            control.querySelector('[data-value="volume"]').textContent = `${newLayer.volume}%`;
+            control.querySelector('[data-value="timeOffset"]').textContent = `${newLayer.timeOffset}s`;
+        }
+        
+        layers.push(newLayer);
+        newLayer.setActive();
+        
+        checkEmptyState();
     }
     
     remove() {
@@ -438,6 +591,24 @@ document.addEventListener('DOMContentLoaded', () => {
     
     if (mobileOverlay) {
         mobileOverlay.addEventListener('click', closeMobileControls);
+    }
+    
+    // Context menu event listeners
+    const contextMenu = document.getElementById('contextMenu');
+    if (contextMenu) {
+        contextMenu.addEventListener('click', (e) => {
+            const action = e.target.closest('.context-menu-item')?.dataset.action;
+            const layerId = parseInt(contextMenu.dataset.layerId);
+            const layer = layers.find(l => l.id === layerId);
+            
+            if (action === 'duplicate' && layer) {
+                layer.duplicate();
+                contextMenu.classList.remove('open');
+            } else if (action === 'delete' && layer) {
+                layer.remove();
+                contextMenu.classList.remove('open');
+            }
+        });
     }
     
     // Add keyboard shortcuts
