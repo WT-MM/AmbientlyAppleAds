@@ -26,6 +26,8 @@ class VideoLayer {
         this.opacity = 1;
         this.volume = 50;
         this.timeOffset = 0;
+        this.duration = 0; // Video duration in seconds
+        this.playbackRate = 1; // Playback speed (1 = normal, 0.5 = half speed, 2 = double speed)
         this.player = null;
         this.element = null;
         this.isDragging = false;
@@ -99,9 +101,32 @@ class VideoLayer {
             events: {
                 'onReady': (event) => {
                     event.target.setVolume(this.volume);
+                    event.target.setPlaybackRate(this.playbackRate);
+                    // Get video duration
+                    this.duration = event.target.getDuration();
+                    this.updateTimeOffsetControls();
                 }
             }
         });
+    }
+    
+    updateTimeOffsetControls() {
+        const control = document.getElementById(`control-${this.id}`);
+        if (control && this.duration > 0) {
+            const timeOffsetInput = control.querySelector('[data-control="timeOffset"]');
+            const timeOffsetDisplay = control.querySelector('[data-value="timeOffset"]');
+            
+            if (timeOffsetInput) {
+                timeOffsetInput.max = this.duration;
+                timeOffsetInput.value = Math.min(this.timeOffset, this.duration);
+            }
+            
+            if (timeOffsetDisplay) {
+                const durationMinutes = Math.floor(this.duration / 60);
+                const durationSeconds = Math.floor(this.duration % 60);
+                timeOffsetDisplay.textContent = `${this.timeOffset}s / ${durationMinutes}:${durationSeconds.toString().padStart(2, '0')}`;
+            }
+        }
     }
     
     createControls() {
@@ -132,8 +157,13 @@ class VideoLayer {
             </div>
             
             <div class="control-row">
-                <label>Time Offset (seconds) <span class="value-display" data-value="timeOffset">${this.timeOffset}s</span></label>
+                <label>Time Offset <span class="value-display" data-value="timeOffset">${this.timeOffset}s</span></label>
                 <input type="range" min="0" max="300" value="${this.timeOffset}" data-control="timeOffset">
+            </div>
+            
+            <div class="control-row">
+                <label>Playback Speed <span class="value-display" data-value="playbackRate">${this.playbackRate}x</span></label>
+                <input type="range" min="0.25" max="2" step="0.25" value="${this.playbackRate}" data-control="playbackRate">
             </div>
             
             <div class="control-row-split">
@@ -181,7 +211,10 @@ class VideoLayer {
                 controlDiv.querySelector('[data-value="opacity"]').textContent = `${Math.round(value)}%`;
             } else if (control === 'timeOffset') {
                 this.setTimeOffset(value);
-                controlDiv.querySelector('[data-value="timeOffset"]').textContent = `${value}s`;
+                this.updateTimeOffsetDisplay();
+            } else if (control === 'playbackRate') {
+                this.setPlaybackRate(value);
+                controlDiv.querySelector('[data-value="playbackRate"]').textContent = `${value}x`;
             } else if (control === 'x') {
                 this.setPosition(value, this.y);
             } else if (control === 'y') {
@@ -245,11 +278,33 @@ class VideoLayer {
     }
     
     setTimeOffset(offset) {
-        this.timeOffset = offset;
+        this.timeOffset = Math.min(offset, this.duration || 300); // Cap at video duration
         // Update controls
         const control = document.getElementById(`control-${this.id}`);
         if (control) {
-            control.querySelector('[data-control="timeOffset"]').value = offset;
+            control.querySelector('[data-control="timeOffset"]').value = this.timeOffset;
+            this.updateTimeOffsetDisplay();
+        }
+    }
+    
+    updateTimeOffsetDisplay() {
+        const control = document.getElementById(`control-${this.id}`);
+        if (control) {
+            const timeOffsetDisplay = control.querySelector('[data-value="timeOffset"]');
+            if (timeOffsetDisplay && this.duration > 0) {
+                const durationMinutes = Math.floor(this.duration / 60);
+                const durationSeconds = Math.floor(this.duration % 60);
+                timeOffsetDisplay.textContent = `${this.timeOffset}s / ${durationMinutes}:${durationSeconds.toString().padStart(2, '0')}`;
+            } else if (timeOffsetDisplay) {
+                timeOffsetDisplay.textContent = `${this.timeOffset}s`;
+            }
+        }
+    }
+    
+    setPlaybackRate(rate) {
+        this.playbackRate = rate;
+        if (this.player && this.player.setPlaybackRate) {
+            this.player.setPlaybackRate(rate);
         }
     }
     
@@ -427,6 +482,7 @@ class VideoLayer {
         newLayer.opacity = this.opacity;
         newLayer.volume = this.volume;
         newLayer.timeOffset = this.timeOffset;
+        newLayer.playbackRate = this.playbackRate;
         
         // Update the visual elements
         newLayer.element.style.left = `${newLayer.x}px`;
@@ -445,9 +501,11 @@ class VideoLayer {
             control.querySelector('[data-control="opacity"]').value = newLayer.opacity * 100;
             control.querySelector('[data-control="volume"]').value = newLayer.volume;
             control.querySelector('[data-control="timeOffset"]').value = newLayer.timeOffset;
+            control.querySelector('[data-control="playbackRate"]').value = newLayer.playbackRate;
             control.querySelector('[data-value="opacity"]').textContent = `${Math.round(newLayer.opacity * 100)}%`;
             control.querySelector('[data-value="volume"]').textContent = `${newLayer.volume}%`;
             control.querySelector('[data-value="timeOffset"]').textContent = `${newLayer.timeOffset}s`;
+            control.querySelector('[data-value="playbackRate"]').textContent = `${newLayer.playbackRate}x`;
         }
         
         layers.push(newLayer);
