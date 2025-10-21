@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apple Ads Ambiently</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app">
+        <header>
+            <h1>Apple Ads Ambiently</h1>
+        </header>
+        
+        <div class="main-container">
+            <!-- Video Canvas Area -->
+            <div class="video-canvas" id="videoCanvas">
+                <!-- Video players will be dynamically added here -->
+            </div>
+            
+            <!-- Control Panel -->
+            <div class="control-panel">
+                <div class="panel-header">
+                    <h2>Controls</h2>
+                    <button class="btn-add" id="addLayerBtn">+ Add Layer</button>
+                </div>
+                
+                <div class="global-controls">
+                    <button class="btn-global" id="playAllBtn">▶ Play All</button>
+                    <button class="btn-global" id="pauseAllBtn">⏸ Pause All</button>
+                </div>
+                
+                <div class="video-selector" id="videoSelector">
+                    <label for="videoSelect">Select Video:</label>
+                    <select id="videoSelect">
+                        <option value="">Choose an Apple ad...</option>
+                        <option value="XOBE3FCyaqU">Apple - Intention</option>
+                        <option value="-ueUb6PNwbs">Apple - Detour</option>
+                        <option value="39nDMn79FrI">Apple - Share Your Gifts</option>
+                        <option value="v76f6KPSJ2w">Apple - The Whole Working-From-Home Thing</option>
+                        <option value="sQB2NjhJHvY">Apple - Privacy on iPhone</option>
+                        <option value="8sX9IEHWRJ8">Apple - Introducing HomePod mini</option>
+                        <option value="gH1X_6NqJqY">Apple - Welcome Home</option>
+                    </select>
+                </div>
+                
+                <div class="layers-container" id="layersContainer">
+                    <!-- Layer controls will be dynamically added here -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://www.youtube.com/iframe_api"></script>
+    <script src="script.js"></script>
+</body>
+</html>
