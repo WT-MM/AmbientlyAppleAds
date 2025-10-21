@@ -1,19 +1,10 @@
-# Apple Ads DJ Board
+# Ambiently Apple Ads
 
-A minimal, Apple-inspired static site that allows you to layer and mix multiple Apple advertisements in real-time. Built with vanilla JavaScript, HTML, and CSS.
-
-## Features
-
-- 🎬 **Multi-layer Video Playback** - Add multiple Apple ads simultaneously
-- 🎚️ **Individual Controls** - Play/pause, volume, and opacity for each layer
-- 📐 **Position & Resize** - Drag videos or use precise X/Y positioning controls
-- 🎨 **Sleek UI** - Minimal, Apple/Teenage Engineering-inspired aesthetic (no gradients)
-- ⌨️ **Keyboard Shortcuts** - Space to play/pause, Delete to remove active layer
-- 🌐 **GitHub Pages Ready** - Pure static HTML/CSS/JS
+A minimal site that allows you to layer and mix different Apple advertisements.
 
 ## Usage
 
-Open `index.html` in your browser or visit the GitHub Pages URL.
+Serve the html file `index.html` with `python -m http.server` or visit the GitHub Pages URL.
 
 1. Select an Apple ad from the dropdown
 2. Click "+ Add Layer" to add it to the canvas
@@ -21,19 +12,11 @@ Open `index.html` in your browser or visit the GitHub Pages URL.
 4. Add more layers and arrange them to create your mix
 5. Drag video layers around the canvas to position them
 
-## Curated Apple Ads
+## Currently Available Ads
 
-- Apple - Intention
-- Apple - Detour
-- Apple - Share Your Gifts
-- Apple - The Whole Working-From-Home Thing
-- Apple - Privacy on iPhone
-- Apple - Introducing HomePod mini
-- Apple - Welcome Home
-
-## Technical Details
-
-- **Framework**: Vanilla JavaScript (no dependencies)
-- **API**: YouTube IFrame API for video embedding
-- **Design**: Pure CSS with CSS custom properties
-- **Compatibility**: Modern browsers with ES6 support
+- [Great ideas start on Mac](https://www.youtube.com/watch?v=XOBE3FCyaqU)
+- [Design is how it works](https://www.youtube.com/watch?v=-ueUb6PNwbs)
+- [Magnifier on Mac](https://www.youtube.com/watch?v=R3rBlZGEssw)
+- [Introducing Airpods Pro 3](https://www.youtube.com/watch?v=EMmKs8vMKhU)
+- [Introducing iPhone Air](https://www.youtube.com/watch?v=M0au92yebLQ)
+- [Privacy on iPhone](https://www.youtube.com/watch?v=0HjDpPnxcP0)
